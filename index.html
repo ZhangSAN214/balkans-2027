@@ -54,6 +54,7 @@ button{font-family:inherit}
 .brand b{font-family:var(--display-cn);font-style:normal;font-weight:900;font-size:15px;margin-left:8px}
 .tools{margin-left:auto;display:flex;gap:8px;align-items:center;flex:none}
 .seg{display:inline-flex;background:color-mix(in oklab,var(--desk-ink) 10%,transparent);border-radius:999px;padding:3px;gap:2px;}
+.seg + .seg{margin-left:2px}
 .seg button{border:0;background:transparent;color:var(--desk-muted);font-weight:500;font-size:12.5px;padding:7px 13px;border-radius:999px;cursor:pointer;transition:background .3s,color .3s}
 .seg button.on{background:var(--desk-ink);color:var(--desk)}
 .music{display:inline-flex;align-items:center;gap:8px;border:1px solid color-mix(in oklab,var(--desk-ink) 20%,transparent);background:color-mix(in oklab,var(--desk-ink) 5%,transparent);color:var(--desk-ink);border-radius:999px;padding:7px 13px 7px 11px;font-size:12.5px;cursor:pointer;}
@@ -639,6 +640,10 @@ td .tix{margin:4px 4px 0 0}
     <a class="brand" href="#top">Beograd — Kotor<b>巴尔干四城九日</b></a>
     <nav class="nav" id="nav" aria-label="章节"><a href="#s-intro">开篇</a><a href="#s-days">九日行程</a><a href="#s-sights">景点</a><a href="#s-food">美食</a><a href="#s-stay">住宿</a><a href="#s-money">交通与预算</a></nav>
     <div class="tools">
+      <div class="seg" id="ppl" role="radiogroup" aria-label="人数">
+        <button type="button" data-n="3" role="radio" aria-checked="false">3 人</button>
+        <button type="button" class="on" data-n="4" role="radio" aria-checked="true">4 人</button>
+      </div>
       <div class="seg" role="radiogroup" aria-label="价格版本">
         <button type="button" class="on" data-v="std" role="radio" aria-checked="true">标准版</button>
         <button type="button" data-v="eco" role="radio" aria-checked="false">经济版</button>
@@ -668,7 +673,12 @@ const C = {beg:'var(--danube)', sjj:'var(--copper)', mostar:'var(--jade)', kotor
 const CN = {beg:'贝尔格莱德',sjj:'萨拉热窝',mostar:'莫斯塔尔',kotor:'科托尔'};
 const L = (t,u) => `<a class="lk" href="${u}" target="_blank" rel="noopener">${t}</a>`;
 const LG = (t,q) => L(t,G(q||t));
-const PR = (s,e) => `<span class="pr"><span class="s">${s}</span><span class="e">${e}</span></span>`;
+const PR = (s,e,o={}) => `<span class="pr"><span class="s"${o.fs?' data-fix':''}>${s}</span><span class="e"${o.fe?' data-fix':''}>${e}</span></span>`;
+const T3 = (h4,h3) => `<span data-t3="${encodeURIComponent(h3)}">${h4}</span>`;
+const B3 = [[900,900],[180,120],[565,565],[525,315],[150,113],[125,90],[99,83],[160,80],[257,209],[165,60]];
+const TOT3 = {s:B3.reduce((a,b)=>a+b[0],0), e:B3.reduce((a,b)=>a+b[1],0)};
+const CAP = {4:4400, 3:3300};
+const rowFix = r => { const s=/出租车|打车|App|taxi/i.test(r[1]+r[2]) || (/步行|公交|小巴|巴士|电车/.test(r[5]||'') && !/大巴|火车|Talgo|Wizz|easyJet|Air Serbia|卢顿/.test(r[1])); return {fs:s, fe:s && !/巴|电车|步行|不去/.test(r[5]||'')}; };
 const IMG = k => IMGMETA[k] ? `img/${k}.webp` : '';
 const HAS = k => !!IMGMETA[k];
 const PICK = (...ks) => ks.find(HAS) || ks[0];
@@ -1030,13 +1040,13 @@ const card = (k,extra='',wide=false,idx=0) => { const p=PH[k]; if(!p||!HAS(k)) r
 
 // cover
 const HERO_TOP = `<div class="eb">2027 复活节 · 四人自由行</div><h1 class="foil">巴尔干<br>四城九日</h1><div class="sub foil">Beograd · Sarajevo · Mostar · Kotor</div><div class="rule"></div>
- <div class="stats"><div><b data-count="9">9</b><span>天 · 4/1–4/9</span></div><div><b>£<span data-count="${Math.round(TOT.s/4)}">${Math.round(TOT.s/4)}</span></b><span>标准版人均</span></div><div><b>£<span data-count="${Math.round(TOT.e/4)}">${Math.round(TOT.e/4)}</span></b><span>经济版人均</span></div></div>
+ <div class="stats"><div><b data-count="9">9</b><span>天 · 4/1–4/9</span></div><div><b>£${T3(`<span data-count="${Math.round(TOT.s/4)}">${Math.round(TOT.s/4)}</span>`,`<span data-count="${Math.round(TOT3.s/3)}">${Math.round(TOT3.s/3)}</span>`)}</b><span>标准版人均</span></div><div><b>£${T3(`<span data-count="${Math.round(TOT.e/4)}">${Math.round(TOT.e/4)}</span>`,`<span data-count="${Math.round(TOT3.e/3)}">${Math.round(TOT3.e/3)}</span>`)}</b><span>经济版人均</span></div></div>
  <div class="hbtns"><a href="#s-days" class="hb1">查看九日行程</a><a href="#s-sights" class="hb2">景点图鉴</a></div>`;
 // toc placeholder (filled after page plan)
 
 page(`<div ${A()}><div class="eb">How to read</div><div class="h1">每一笔，都有两个价</div></div>
  <p class="p" ${A()}>本册所有价格都是<b>四人合计</b>，按 £1 ≈ 135 RSD ≈ 2.25 KM ≈ €1.15 估算。右上角切换版本，被选中的价格会加粗，另一版变淡。</p>
- <div class="duo" ${A()}><div class="vcard vs"><div class="k">标准版</div><div class="t num">£<span data-count="${TOT.s}">${TOT.s.toLocaleString()}</span></div><div class="pp">人均 £${Math.round(TOT.s/4)}</div></div><div class="vcard ve"><div class="k">经济版</div><div class="t num">£<span data-count="${TOT.e}">${TOT.e.toLocaleString()}</span></div><div class="pp">人均 £${Math.round(TOT.e/4)}</div></div></div>
+ <div class="duo" ${A()}><div class="vcard vs"><div class="k">标准版</div><div class="t num">£${T3(`<span data-count="${TOT.s}">${TOT.s.toLocaleString()}</span>`,`<span data-count="${TOT3.s}">${TOT3.s.toLocaleString()}</span>`)}</div><div class="pp">${T3(`人均 £${Math.round(TOT.s/4)}`,`人均 £${Math.round(TOT3.s/3)}`)}</div></div><div class="vcard ve"><div class="k">经济版</div><div class="t num">£${T3(`<span data-count="${TOT.e}">${TOT.e.toLocaleString()}</span>`,`<span data-count="${TOT3.e}">${TOT3.e.toLocaleString()}</span>`)}</div><div class="pp">${T3(`人均 £${Math.round(TOT.e/4)}`,`人均 £${Math.round(TOT3.e/3)}`)}</div></div></div>
  <div class="legend2" ${A()}><div>${PR('£24','£12')}<span class="sm">左：标准版　右：经济版</span></div><div><span class="tag">经济：学生价</span><span class="sm">经济版具体怎么省</span></div><div>${hs('starimost')}<span class="sm">点它看实景照片、价格和链接</span></div></div>
  <p class="p sm" ${A()}>两版景点几乎一样，经济版只少 Blagaj 和莫斯塔尔战争博物馆；差别主要在吃、交通和购物。标准版餐饮按逐日估算约 £700；曼城往返卢顿按约 £60/人；住宿已按 4 位成人在 Booking 核价（2026 年 10 月 30 日）。</p>`,{l:'巴尔干四城九日',r:'读法',label:'读法',ph:'starimost',grp:'开篇'});
 
@@ -1064,11 +1074,11 @@ DAYS.forEach((d,i)=>{
   ${walk}${meals}
 `;
  pages.push({label:`Day ${d.d} · ${d.title}`, ph, grp:'九日', id:'day-'+i, html:art(left,d.c,'day-'+i)});
- let s=0,e=0; d.rows.forEach(r=>{s+=num(r[3]);e+=num(r[4])});
+ let s=0,e=0,s3=0,e3=0; d.rows.forEach(r=>{const f=rowFix(r); const a=num(r[3]), b=num(r[4]); s+=a; e+=b; s3+=f.fs?a:a*.75; e3+=f.fe?b:b*.75;});
  ai=0;
- const rows = d.rows.map(r=>{const hit=ROWPH.find(x=>r[1].includes(x[0])); return `<div class="row${r[6]?' '+r[6]:''}" ${A()}><div class="tm">${r[0]}</div><div class="w">${r[1]}${hit?hs(hit[1]):''}${(()=>{const tk=ROWTIX.find(x=>r[1].includes(x[0])); return tk?tix(tk[1],/Air|easyJet|卢顿|大巴|Talgo/.test(tk[0])?'订票':'购票'):''})()}${r[2]?`<span class="m">${r[2]}</span>`:''}${r[5]?`<span class="tag">经济：${r[5]}</span>`:''}</div>${PR(r[3],r[4])}</div>`}).join('');
+ const rows = d.rows.map(r=>{const hit=ROWPH.find(x=>r[1].includes(x[0])); return `<div class="row${r[6]?' '+r[6]:''}" ${A()}><div class="tm">${r[0]}</div><div class="w">${r[1]}${hit?hs(hit[1]):''}${(()=>{const tk=ROWTIX.find(x=>r[1].includes(x[0])); return tk?tix(tk[1],/Air|easyJet|卢顿|大巴|Talgo/.test(tk[0])?'订票':'购票'):''})()}${r[2]?`<span class="m">${r[2]}</span>`:''}${r[5]?`<span class="tag">经济：${r[5]}</span>`:''}</div>${PR(r[3],r[4],rowFix(r))}</div>`}).join('');
  const right = `<div class="sh" ${A()}><span>时间</span><span>安排</span><span>标准 / 经济</span></div>${rows}
-  <div class="subt" ${A()}><span>当日小计（不含机票住宿，约）</span>${PR('£'+Math.round(s),'£'+Math.round(e))}</div>
+  <div class="subt" ${A()}><span>当日小计（不含机票住宿，约）</span>${T3(PR('£'+Math.round(s),'£'+Math.round(e)),PR('£'+Math.round(s3),'£'+Math.round(e3)))}</div>
   <div class="notes" ${A()}>${d.notes.map((n,j)=>`<p class="${(d.warn||[]).includes(j)?'w':''}">${n}</p>`).join('')}</div>`;
  page(right,{l:'Day '+d.d+' · 时间表',r:d.date,label:`Day ${d.d} · 时间表`,ph,c:d.c,grp:'九日'});
 });
@@ -1097,7 +1107,7 @@ page(`<div ${A()}><div class="eb">Food</div><div class="h2">美食图鉴</div><p
  <div class="gal wall">${fk.map((k,i)=>`<div class="a pw" style="--i:${i+2}">${card(k,PH[k][9],i===0,i)}</div>`).join('')}</div>`,{l:'图鉴',r:'美食',label:'美食图鉴',ph:fk[0],c:'var(--copper)',grp:'图鉴'});
 page(`<div ${A()}><div class="eb">Food</div><div class="h2">美食价格带：每人一餐</div>
  <p class="p sm">每条是一类吃法的价格区间。标准版多去<b style="color:var(--pp-ink)">深色</b>那几档，经济版多去<b style="color:var(--eco)">青色</b>那几档。点任意一条看照片。</p></div>
- <div class="chart" id="foodChart" ${A()}></div>`,{l:'图鉴',r:'美食',label:'美食价格带',ph:'cevapi',grp:'图鉴'});
+ <div class="chart" id="foodChart" data-noscale ${A()}></div>`,{l:'图鉴',r:'美食',label:'美食价格带',ph:'cevapi',grp:'图鉴'});
 const mealDay = DAYS.map(d=>{const s=d.meals.reduce((a,m)=>a+ +m.s.p.slice(1),0), e=d.meals.reduce((a,m)=>a+ +m.e.p.slice(1),0);return [d,s,e]});
 page(`<div ${A()}><div class="eb">Meals</div><div class="h2">餐饮逐日对比</div></div>
  <table class="t" ${A()}><thead><tr><th>日</th><th>标准版</th><th>经济版</th><th class="n">标准</th><th class="n">经济</th></tr></thead><tbody>
@@ -1108,30 +1118,30 @@ page(`<div ${A()}><div class="eb">Meals</div><div class="h2">餐饮逐日对比<
 page(`<div ${A()}><div class="eb">Stays</div><div class="h2">住宿图：每晚价格 × 离中心距离</div>
  <p class="p sm">圆越大点评越多。双环是两版共同的选择（经济版不再在住宿上省钱：萨拉热窝的便宜选项要睡沙发床且不可退款，只省 £24）。点圆看街区照片和 Booking 链接（已填 4 位成人）。</p></div>
  <div class="filt" data-f="stays" ${A()}>${['sjj','mostar','kotor'].map((c,i)=>`<button type="button" class="${i===0?'on':''}" data-c="${c}" style="--c:${C[c]}"><i></i>${CN[c]}</button>`).join('')}</div>
- <div class="chart" id="stayChart" ${A()}></div><p class="p sm" ${A()}>贝尔格莱德两版都住 Kapetan-Misa（2 晚 £141，可住 4 人），只有一家，未画入图中。</p>`,{l:'图鉴',r:'住宿',label:'住宿图',ph:'bascarsija',grp:'图鉴'});
+ <div class="chart" id="stayChart" data-noscale ${A()}></div><p class="p sm" ${A()}>贝尔格莱德两版都住 Kapetan-Misa（2 晚 £141，可住 4 人），只有一家，未画入图中。</p>`,{l:'图鉴',r:'住宿',label:'住宿图',ph:'bascarsija',grp:'图鉴'});
 const SC = [['beg','Beograd','Kapetan-Misa','£141','Kapetan-Misa','£141'],['sjj','Sarajevo','SarajevoScape','£132','SarajevoScape','£132'],['mostar','Mostar','Residence Riverside','£58','Residence Riverside','£58'],['kotor','Kotor','Maritimo di Cattaro','£260','Maritimo di Cattaro','£260']];
 page(`<div ${A()}><div class="eb">Stays</div><div class="h2">住宿两版对比</div></div>
- <div class="sc" ${A()}>${SC.map(s=>`<div class="c" style="--c:${C[s[0]]}"><h5>${s[1]} ${hs(STAYPH[s[0]],'街区')}</h5><div class="ch"><span><b>标准</b> ${s[2]}</span><span class="pr"><span class="s">${s[3]}</span></span></div><div class="ch"><span><b style="color:var(--eco)">经济</b> ${s[4]}</span><span class="pr"><span class="e" style="opacity:1">${s[5]}</span></span></div></div>`).join('')}</div>
- <div class="subt" ${A()}><span>住宿合计</span>${PR('£591','£591')}</div>
- <table class="t" ${A()}><thead><tr><th>房源</th><th>床型（最多 4 人）</th><th class="n">3 人</th><th class="n">4 人</th></tr></thead><tbody>${STAYS.map(s=>`<tr><td>${L(s[1],BK(s[8],s[9],s[10]))}<div class="sm">${CN[s[0]]} · ${s[11]}${s[7]!=='x'?` · <b style="color:${s[7]==='e'?'var(--eco)':'var(--pp-ink)'}">${s[7]==='s'?'标准版':s[7]==='e'?'经济版':'两版'}</b>`:''}</div></td><td class="sm">${s[13]}</td><td class="n sm">£${s[12]}</td><td class="n"><b>£${s[6]}</b> <span class="sm" style="color:${s[6]-s[12]>0?'var(--copper)':'var(--pp-muted)'}">${s[6]-s[12]>0?'+':''}${s[6]-s[12]}</span></td></tr>`).join('')}</tbody></table>
+ <div class="sc" ${A()}>${SC.map(s=>`<div class="c" style="--c:${C[s[0]]}"><h5>${s[1]} ${hs(STAYPH[s[0]],'街区')}</h5><div class="ch"><span><b>标准</b> ${s[2]}</span>${T3(`<span class="pr"><span class="s">${s[3]}</span></span>`,`<span class="pr"><span class="s">£${STAYS.find(x=>x[1]===s[2])[12]}</span></span>`)}</div><div class="ch"><span><b style="color:var(--eco)">经济</b> ${s[4]}</span>${T3(`<span class="pr"><span class="e" style="opacity:1">${s[5]}</span></span>`,`<span class="pr"><span class="e" style="opacity:1">£${STAYS.find(x=>x[1]===s[4])[12]}</span></span>`)}</div></div>`).join('')}</div>
+ <div class="subt" ${A()}><span>住宿合计</span>${T3(PR('£591','£591'),PR('£565','£565'))}</div>
+ <table class="t" data-noscale ${A()}><thead><tr><th>房源</th><th>床型（最多 4 人）</th><th class="n">3 人</th><th class="n">4 人</th></tr></thead><tbody>${STAYS.map(s=>`<tr><td>${L(s[1],BK(s[8],s[9],s[10]))}<div class="sm">${CN[s[0]]} · ${s[11]}${s[7]!=='x'?` · <b style="color:${s[7]==='e'?'var(--eco)':'var(--pp-ink)'}">${s[7]==='s'?'标准版':s[7]==='e'?'经济版':'两版'}</b>`:''}</div></td><td class="sm">${s[13]}</td><td class="n sm">£${s[12]}</td><td class="n"><b>£${s[6]}</b> <span class="sm" style="color:${s[6]-s[12]>0?'var(--copper)':'var(--pp-muted)'}">${s[6]-s[12]>0?'+':''}${s[6]-s[12]}</span></td></tr>`).join('')}</tbody></table>
  <p class="p sm" ${A()}>以上为 2026 年 10 月 30 日按 4 位成人、实际入住日期在 Booking 查到的总价（含税，未计会员折扣），每一家都能住下 4 人。Riverside 也可选 Superior Apartment（1 张大床 + 2 张单人床）£60。房间实拍照片请点名称进 Booking 看。</p>`,{l:'图鉴',r:'住宿',label:'住宿对比',ph:'kujundziluk',grp:'图鉴'});
 
 page(`<div ${A()}><div class="eb">Transport</div><div class="h2">交通逐段对比</div></div>
- <table class="t" ${A()}><thead><tr><th>路段</th><th>标准版</th><th>经济版</th><th class="n">标准</th><th class="n">经济</th></tr></thead><tbody>${TRANS.map(t=>`<tr><td>${t[0]}${t[0].includes('莫斯塔尔')&&t[0].startsWith('萨拉')?hs('neretva','图'):''}${t[5]?`<div>${t[5].split('|').map((u,i)=>tix(u,t[5].includes('|')?(i?'火车票':'大巴票'):'购票 / 信息')).join(' ')}</div>`:''}</td><td class="sm">${t[1]}</td><td class="sm">${t[3]}</td><td class="s">${t[2]}</td><td class="e">${t[4]}</td></tr>`).join('')}</tbody></table>
+ <table class="t" ${A()}><thead><tr><th>路段</th><th>标准版</th><th>经济版</th><th class="n">标准</th><th class="n">经济</th></tr></thead><tbody>${TRANS.map(t=>`<tr><td>${t[0]}${t[0].includes('莫斯塔尔')&&t[0].startsWith('萨拉')?hs('neretva','图'):''}${t[5]?`<div>${t[5].split('|').map(u=>tix(u,/nationalrail/.test(u)?'火车票':/nationalexpress|getbybus/.test(u)?'大巴票':/centrotrans/.test(u)?'大巴班次':/zfbh/.test(u)?'火车时刻':'交通信息')).join(' ')}</div>`:''}</td><td class="sm">${t[1]}</td><td class="sm">${t[3]}</td><td class="s"${/出租车|打车/.test(t[1])?' data-fix':''}>${t[2]}</td><td class="e"${/出租车/.test(t[3])||(t[3]==='同左'&&/出租车|打车/.test(t[1]))?' data-fix':''}>${t[4]}</td></tr>`).join('')}</tbody></table>
  <div class="subt" ${A()}><span>预算：英国段 + 波黑段 + 市内</span>${PR('£567','£380')}</div>
  <p class="p sm" ${A()}>贝尔格莱德市内公交免费；波黑火车票窗口和出租车多只收现金。</p>`,{l:'对比',r:'交通',label:'交通对比',ph:'neretva',grp:'对比'});
 page(`<div ${A()}><div class="eb">Extras</div><div class="h2">游船、生日与购物</div></div>
- <table class="t" ${A()}><thead><tr><th>蓝洞快艇 ${hs('bluecave','图')}</th><th>时长</th><th>包含</th><th class="n">每人</th></tr></thead><tbody>${BOAT.map(b=>`<tr><td>${b[0]}</td><td class="num">${b[1]}</td><td class="sm">${b[2]}</td><td class="n">${b[3]}</td></tr>`).join('')}</tbody></table>
+ <table class="t" data-noscale ${A()}><thead><tr><th>蓝洞快艇 ${hs('bluecave','图')}</th><th>时长</th><th>包含</th><th class="n">每人</th></tr></thead><tbody>${BOAT.map(b=>`<tr><td>${b[0]}</td><td class="num">${b[1]}</td><td class="sm">${b[2]}</td><td class="n">${b[3]}</td></tr>`).join('')}</tbody></table>
  <div class="subt" ${A()}><span>四人：标准用你收藏的那款，经济按 3 h 同类约 £27/人</span>${PR('£132','£110')}</div>
  <div class="notes" ${A()}><p>换之前核对：是否含圣母岩岛门票（约 €5/人）、4 月能否进洞、能否改到 4/8、你那单能否免费取消。</p></div>
  <table class="t" style="margin-top:14px" ${A()}><thead><tr><th>项目</th><th>标准版</th><th>经济版</th><th class="n">标准</th><th class="n">经济</th></tr></thead><tbody>
  <tr><td>生日晚餐 ${hs('seafood','图')}</td><td class="sm">Galion 等任选</td><td class="sm">Scala Santa 或 Portun</td><td class="s">£200</td><td class="e">£150</td></tr>
  <tr><td>购物零食</td><td class="sm">不设上限</td><td class="sm">每人 £20</td><td class="s">£220</td><td class="e">£80</td></tr></tbody></table>`,{l:'对比',r:'游船 · 生日 · 购物',label:'游船、生日与购物',ph:'bluecave',grp:'对比'});
 page(`<div ${A()}><div class="eb">Budget</div><div class="h2">预算总表</div></div>
- <div class="duo" ${A()}><div class="vcard vs"><div class="k">标准版 · 四人</div><div class="t num">£<span data-count="${TOT.s}">${TOT.s.toLocaleString()}</span></div><div class="pp">人均 £${Math.round(TOT.s/4)} · 余 £${4400-TOT.s}</div></div><div class="vcard ve"><div class="k">经济版 · 四人</div><div class="t num">£<span data-count="${TOT.e}">${TOT.e.toLocaleString()}</span></div><div class="pp">人均 £${Math.round(TOT.e/4)} · 余 £${4400-TOT.e}</div></div></div>
- <div ${A()}><div class="cap2"><i id="capbar" style="width:${TOT.s/4400*100}%"></i></div><div class="sm" style="display:flex;justify-content:space-between;margin-top:4px;font-family:var(--mono)"><span>£0</span><span>总预算 £4,400</span></div></div>
- <div class="bars2">${BUDGET.map(b=>`<div class="bar2" ${A()}><span>${b[0]}</span><div class="tr"><i class="s" style="width:${b[1]/1200*100}%"></i><i class="e" style="width:${b[2]/1200*100}%"></i></div>${PR('£'+b[1],'£'+b[2])}</div>`).join('')}</div>
- <div class="subt" ${A()}><span>合计</span>${PR('£'+TOT.s.toLocaleString(),'£'+TOT.e.toLocaleString())}</div>`,{l:'总表',r:'预算',label:'预算总表',ph:'kalemegdan',grp:'对比'});
+ <div class="duo" ${A()}><div class="vcard vs"><div class="k">标准版 · 四人</div><div class="t num">£${T3(`<span data-count="${TOT.s}">${TOT.s.toLocaleString()}</span>`,`<span data-count="${TOT3.s}">${TOT3.s.toLocaleString()}</span>`)}</div><div class="pp">${T3(`人均 £${Math.round(TOT.s/4)} · 余 £${4400-TOT.s}`,`人均 £${Math.round(TOT3.s/3)} · 余 £${3300-TOT3.s}`)}</div></div><div class="vcard ve"><div class="k">经济版 · 四人</div><div class="t num">£${T3(`<span data-count="${TOT.e}">${TOT.e.toLocaleString()}</span>`,`<span data-count="${TOT3.e}">${TOT3.e.toLocaleString()}</span>`)}</div><div class="pp">${T3(`人均 £${Math.round(TOT.e/4)} · 余 £${4400-TOT.e}`,`人均 £${Math.round(TOT3.e/3)} · 余 £${3300-TOT3.e}`)}</div></div></div>
+ <div ${A()}><div class="cap2"><i id="capbar" style="width:${TOT.s/4400*100}%"></i></div><div class="sm" style="display:flex;justify-content:space-between;margin-top:4px;font-family:var(--mono)"><span>£0</span>${T3('<span>总预算 £4,400（人均 £1,100）</span>','<span>总预算 £3,300（人均 £1,100）</span>')}</div></div>
+ <div class="bars2">${BUDGET.map(b=>`<div class="bar2" ${A()}><span>${b[0]}</span><div class="tr"><i class="s" style="width:${b[1]/1200*100}%"></i><i class="e" style="width:${b[2]/1200*100}%"></i></div>${T3(PR('£'+b[1],'£'+b[2]),PR('£'+B3[BUDGET.indexOf(b)][0],'£'+B3[BUDGET.indexOf(b)][1]))}</div>`).join('')}</div>
+ <div class="subt" ${A()}><span>合计</span>${T3(PR('£'+TOT.s.toLocaleString(),'£'+TOT.e.toLocaleString()),PR('£'+TOT3.s.toLocaleString(),'£'+TOT3.e.toLocaleString()))}</div>`,{l:'总表',r:'预算',label:'预算总表',ph:'kalemegdan',grp:'对比'});
 let saved=[]; try{saved=JSON.parse(localStorage.getItem('bk-check')||'[]')}catch(e){}
 page(`<div ${A()}><div class="eb">Before you go</div><div class="h2">出发前清单</div><p class="sm" id="ckprog" style="margin-top:6px"></p></div>
  <div ${A()}>${CHECK.map((c,i)=>`<label class="ck" for="bk${i}"><input type="checkbox" id="bk${i}" ${saved.includes(i)?'checked':''}><span>${c[0]}${c[1]?`<small>${c[1]}</small>`:''}</span></label>`).join('')}</div>
@@ -1306,9 +1316,10 @@ function fillLB(){
  const stay = STAYS.filter(s=>STAYPH[s[0]]===k&&s[7]!=='x');
  const stayLinks = stay.map(s=>`<a href="${BK(s[8],s[9],s[10])}" target="_blank" rel="noopener">${ICO.bed}${s[1]}</a>`).join('');
  const dayIdx = lbCity? DAYS.findIndex(d=>d.focus===lbCity) : -1;
- document.getElementById('lbInfo').innerHTML = `<div class="city">${p[0]==='food'?'Food · 美食':CN[p[0]]+' · '+{beg:'Serbia',sjj:'Bosnia & Herzegovina',mostar:'Bosnia & Herzegovina',kotor:'Montenegro'}[p[0]]}</div><h3 id="lbT">${p[1]}</h3><div class="en">${p[2]}</div><div class="d">${p[3]}</div><div class="facts">${facts}</div>${foodLinks}
+ document.getElementById('lbInfo').innerHTML = `<div class="city">${p[0]==='food'?'Food · 美食':CN[p[0]]+' · '+{beg:'Serbia',sjj:'Bosnia & Herzegovina',mostar:'Bosnia & Herzegovina',kotor:'Montenegro'}[p[0]]}</div><h3 id="lbT">${p[1]}</h3><div class="en">${p[2]}</div><div class="d">${p[3]}</div><div class="facts"${p[0]==='food'?' data-noscale':''}>${facts}</div>${foodLinks}
   ${TIX[k]?`<div class="tixnote"><b>购票</b>${TIX[k][1]}</div>`:''}<div class="links">${TIX[k]?`<a class="buy" href="${TIX[k][0]}" target="_blank" rel="noopener">${ICO.ext}${k==='seafood'?'订位 / 菜单':'购票 / 官网'}</a>`:''}<a href="${G(url?p[2]+' '+CN[p[0]]||p[2]:p[7])}" target="_blank" rel="noopener">${ICO.map}Google 地图</a>${url&&!(TIX[k]&&TIX[k][0]===url)?`<a href="${url}" target="_blank" rel="noopener">${ICO.ext}官网</a>`:''}${stayLinks}</div>
   ${dayIdx>=0?`<div class="jump"><button type="button" data-jump="day-${dayIdx}">翻到 ${DAYS[dayIdx].date} 这一天 →</button></div>`:''}${stayLinks?'<p class="sm" style="margin-top:10px">照片是住处所在街区，房间实拍请在 Booking 查看。</p>':''}`;
+ if(typeof PEOPLE!=='undefined'&&PEOPLE===3) scaleIn(document.getElementById('lbInfo'));
 }
 function lbStep(d){ if(lbList.length<2)return; lbI=(lbI+d+lbList.length)%lbList.length; lbCity=null; fillLB(); }
 function closeLB(){ lb.classList.remove('on'); lb.setAttribute('aria-hidden','true'); lbOpen=false; if(lbFrom&&lbFrom.focus) lbFrom.focus({preventScroll:true}); }
@@ -1327,7 +1338,7 @@ function initCharts(){
   sc.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="景点停留时间与门票">${g}${b}</svg><div class="tip"></div>`;
   const t=sc.querySelector('.tip');
   sc.querySelectorAll('.bub').forEach(el=>{const x=SIGHTS[+el.dataset.i];
-   const show=()=>{t.innerHTML=`<b>${x[1]}</b>停留约 ${x[2]} h · ${x[5]||'免费'}<br>标准 £${x[3]} · 经济 £${x[4]}<em>◉ 点击看照片与链接</em>`; const r=el.getBoundingClientRect(), pr=sc.getBoundingClientRect(); const z=pr.width/sc.offsetWidth||1; t.style.left=Math.max(0,Math.min(sc.offsetWidth-230,(r.left-pr.left)/z+14))+'px'; t.style.top=((r.top-pr.top)/z-74)+'px'; t.classList.add('on')};
+   const show=()=>{t.innerHTML=`<b>${x[1]}</b>停留约 ${x[2]} h · ${x[5]||'免费'}<br>标准 £${x[3]} · 经济 £${x[4]}（四人）<em>◉ 点击看照片与链接</em>`; scaleIn(t); const r=el.getBoundingClientRect(), pr=sc.getBoundingClientRect(); const z=pr.width/sc.offsetWidth||1; t.style.left=Math.max(0,Math.min(sc.offsetWidth-230,(r.left-pr.left)/z+14))+'px'; t.style.top=((r.top-pr.top)/z-74)+'px'; t.classList.add('on')};
    el.addEventListener('mouseenter',show); el.addEventListener('focus',show); el.addEventListener('mouseleave',()=>t.classList.remove('on')); el.addEventListener('blur',()=>t.classList.remove('on'));
    el.addEventListener('keydown',e=>{if(e.key==='Enter')el.dispatchEvent(new MouseEvent('click',{bubbles:true}))});
   });
@@ -1377,7 +1388,7 @@ function initCharts(){
  document.querySelectorAll('.ck input').forEach(x=>x.addEventListener('change',()=>{const on=[...document.querySelectorAll('.ck input')].map((x,i)=>x.checked?i:-1).filter(i=>i>=0);try{localStorage.setItem('bk-check',JSON.stringify(on))}catch(_){} ckprog()})); ckprog();
 }
 function ckprog(){const n=[...document.querySelectorAll('.ck input')].filter(x=>x.checked).length; const el=document.getElementById('ckprog'); if(el) el.textContent=`${n} / ${CHECK.length} 已完成 · 勾选保存在这台设备上`;}
-function applyVer(){ const v=stage.dataset.ver; const sc=document.getElementById('sightChart'); if(sc&&sc._pos) sc._pos(v); const cap=document.getElementById('capbar'); if(cap) cap.style.width=((v==='eco'?TOT.e:TOT.s)/4400*100)+'%'; }
+function applyVer(){ const v=stage.dataset.ver; const sc=document.getElementById('sightChart'); if(sc&&sc._pos) sc._pos(v); const cap=document.getElementById('capbar'); const TT=PEOPLE===3?TOT3:TOT; if(cap) cap.style.width=((v==='eco'?TT.e:TT.s)/CAP[PEOPLE]*100)+'%'; }
 document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{ document.querySelectorAll('.seg button').forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-checked',x===b)}); stage.dataset.ver=b.dataset.v; lb.dataset.ver=b.dataset.v; try{localStorage.setItem('bk-ver',b.dataset.v)}catch(_){} applyVer(); }));
 try{const v=localStorage.getItem('bk-ver'); if(v){stage.dataset.ver=v; document.querySelectorAll('.seg button').forEach(x=>{x.classList.toggle('on',x.dataset.v===v);x.setAttribute('aria-checked',x.dataset.v===v)})}}catch(_){}
 
@@ -1522,8 +1533,23 @@ mb.addEventListener('click',()=>{
 });
 document.addEventListener('visibilitychange',()=>{ if(!AC||!playing) return; document.hidden? AC.suspend() : AC.resume(); });
 
+/* ================= 3 / 4 PEOPLE ================= */
+let PEOPLE=4;
+const MONEY=/£(\d[\d,]*)(?:–(\d[\d,]*))?/g;
+function scaleText(s,fix){ if(PEOPLE===4||fix) return s; return s.replace(MONEY,(m,a,b,off,str)=>{ const pre=str.slice(Math.max(0,off-3),off), post=str.slice(off+m.length,off+m.length+2); if(/每人|人均/.test(pre)||post.startsWith('/人')) return m; const f=v=>Math.round(+v.replace(/,/g,'')*PEOPLE/4).toLocaleString(); return '£'+f(a)+(b?'–'+f(b):''); }); }
+function scaleIn(root){ if(!root) return;
+ root.querySelectorAll('[data-t3]').forEach(el=>{ if(el._t4==null) el._t4=el.innerHTML; const want=PEOPLE===3?decodeURIComponent(el.dataset.t3):el._t4; if(el.innerHTML!==want) el.innerHTML=want; });
+ const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT); const nodes=[]; while(w.nextNode()) nodes.push(w.currentNode);
+ nodes.forEach(n=>{ const pe=n.parentElement; if(!pe||pe.closest('[data-noscale],[data-t3],script,style')) return; if(n._o==null) n._o=n.nodeValue; let s=n._o; if(PEOPLE===3){ s=s.replace(/四人/g,'三人').replace(/4 位成人/g,'3 位成人').replace(/4 人/g,'3 人'); s=scaleText(s,!!pe.closest('[data-fix]')); } if(n.nodeValue!==s) n.nodeValue=s; }); }
+function setPeople(n){ PEOPLE=n; document.querySelectorAll('#ppl button').forEach(b=>{b.classList.toggle('on',+b.dataset.n===n); b.setAttribute('aria-checked',+b.dataset.n===n)});
+ document.querySelectorAll('a[href*="booking.com"]').forEach(a=>{ a.href=a.href.replace(/group_adults=\d/,'group_adults='+n); });
+ scaleIn(document.getElementById('main')); applyVer(); if(lbOpen) fillLB(); try{localStorage.setItem('bk-ppl',n)}catch(_){}
+ const hd=document.querySelector('.hl .eb'); if(hd) hd.textContent='2027 复活节 · '+(n===3?'三':'四')+'人自由行'; }
+document.querySelectorAll('#ppl button').forEach(b=>b.addEventListener('click',()=>setPeople(+b.dataset.n)));
+
 /* boot */
 boot();
+try{ if(localStorage.getItem('bk-ppl')==='3') setPeople(3); }catch(_){}
 </script>
 
 </body>
